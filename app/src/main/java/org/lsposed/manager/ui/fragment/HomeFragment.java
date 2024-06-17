@@ -50,7 +50,6 @@ import org.lsposed.manager.ui.dialog.BlurBehindDialogBuilder;
 import org.lsposed.manager.ui.dialog.FlashDialogBuilder;
 import org.lsposed.manager.ui.dialog.WelcomeDialog;
 import org.lsposed.manager.util.NavUtil;
-import org.lsposed.manager.util.Telemetry;
 import org.lsposed.manager.util.UpdateUtil;
 import org.lsposed.manager.util.chrome.LinkTransformationMethod;
 
@@ -151,8 +150,8 @@ public class HomeFragment extends BaseFragment implements MenuProvider {
                 binding.statusTitle.setText(R.string.activated);
                 binding.statusIcon.setImageResource(R.drawable.ic_round_check_circle_24);
             }
-            binding.statusSummary.setText(String.format(LocaleDelegate.getDefaultLocale(), "%s (%d) - %s",
-                    ConfigManager.getXposedVersionName(), ConfigManager.getXposedVersionCode(), ConfigManager.getApi()));
+            binding.statusSummary.setText(String.format(LocaleDelegate.getDefaultLocale(), "%s (%d)",
+                    ConfigManager.getXposedVersionName(), ConfigManager.getXposedVersionCode()));
             binding.developerWarningCard.setVisibility(isDeveloper() ? View.VISIBLE : View.GONE);
         } else {
             boolean isMagiskInstalled = ConfigManager.isMagiskInstalled();
@@ -246,7 +245,6 @@ public class HomeFragment extends BaseFragment implements MenuProvider {
         map.put("api", binding.api.getText().toString());
         map.put("frameworkVersion", binding.frameworkVersion.getText().toString());
         map.put("systemAbi", Arrays.toString(Build.SUPPORTED_ABIS));
-        Telemetry.trackEvent("HomeFragment", map);
         binding.copyInfo.setOnClickListener(v -> {
             ClipboardUtils.put(activity, info);
             showHint(R.string.info_copied, false);

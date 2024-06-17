@@ -114,6 +114,18 @@ jobs:
           unzip magisk-loader/release/LSPosed-v*-release.zip -d LSPosed-release
           unzip magisk-loader/release/LSPosed-v*-debug.zip -d LSPosed-debug
 
+      - name: Upload release
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.prepareArtifact.outputs.ReleaseName }}
+          path: "./LSPosed-release/*"
+
+      - name: Upload debug
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.prepareArtifact.outputs.DebugName }}
+          path: "./LSPosed-debug/*"
+
       - name: Upload mappings
         uses: actions/upload-artifact@v3
         with:

@@ -123,7 +123,7 @@ fun afterEval() = android.applicationVariants.forEach { variant ->
     val magiskDir = layout.buildDirectory.dir("magisk/$variantLowered")
 
     val moduleId = "${flavorLowered}_$moduleBaseId"
-    val zipFileName = "$moduleName-v$verName-$verCode-${flavorLowered}-$buildTypeLowered.zip"
+    val zipFileName = "$moduleName-v$verName-$verCode-$buildTypeLowered.zip"
 
     val prepareMagiskFilesTask = task<Sync>("prepareMagiskFiles$variantCapped") {
         group = "LSPosed"
@@ -146,7 +146,7 @@ fun afterEval() = android.applicationVariants.forEach { variant ->
                 "versionCode" to verCode,
                 "authorList" to authors,
                 "updateJson" to "https://lsposed.github.io/LSPosed/release/${flavorLowered}.json",
-                "requirement" to when (flavorLowered) {
+                "requirement" to when (flavorCapped) {
                     "zygisk" -> "Requires Magisk 24.0+ and Zygisk enabled"
                     else -> "No further requirements"
                 },

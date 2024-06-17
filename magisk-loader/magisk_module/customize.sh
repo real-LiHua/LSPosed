@@ -102,6 +102,7 @@ if [ "$FLAVOR" == "zygisk" ]; then
       mv "$MODPATH/zygisk/liblspd.so" "$MODPATH/zygisk/x86_64.so"
     fi
   fi
+fi
 
 if [ "$API" -ge 29 ]; then
   ui_print "- Extracting dex2oat binaries"

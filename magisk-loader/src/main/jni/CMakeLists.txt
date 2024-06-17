@@ -7,7 +7,7 @@ configure_file(template/loader.cpp src/loader.cpp)
 
 aux_source_directory(src SRC_LIST)
 if (${API} STREQUAL "zygisk")
-    set(SRC_LIST ${SRC_LIST} api/zygisk_main.cpp)
+    set(SRC_LIST ${SRC_LIST} api/main.cpp)
 endif()
 
 add_library(${PROJECT_NAME} SHARED ${SRC_LIST} ${CMAKE_CURRENT_BINARY_DIR}/src/loader.cpp)
