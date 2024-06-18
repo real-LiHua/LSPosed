@@ -32,7 +32,7 @@ jobs:
       - name: Update Ninja
         run: |
           sudo apt update
-          sudo apt install -y ninja
+          sudo apt install -y ninja-build
       - name: Write key
         if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/master' ) || github.ref_type == 'tag' }}
         run: |
