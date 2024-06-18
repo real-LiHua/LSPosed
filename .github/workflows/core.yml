@@ -85,11 +85,9 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          cd $(mktemp -d)
           wget https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
           unzip ninja-linux.zip
-          export PATH=$(pwd):$PATH
-          cd -
+          sudo mv -f ninja /usr/local/lib/android/sdk/cmake/3.22.1/bin/ninja
           ./gradlew zipAll
 
       - name: Prepare artifact
