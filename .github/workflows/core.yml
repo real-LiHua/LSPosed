@@ -29,10 +29,6 @@ jobs:
           submodules: "recursive"
           fetch-depth: 0
 
-      - name: Update Ninja
-        run: |
-          sudo apt update
-          sudo apt install -y ninja-build
       - name: Write key
         if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/master' ) || github.ref_type == 'tag' }}
         run: |
@@ -89,6 +85,11 @@ jobs:
 
       - name: Build with Gradle
         run: |
+          cd $(mktemp -d)
+          wget https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+          unzip ninja-linux.zip
+          export PATH = $(pwd):$PATH
+          cd -
           ./gradlew zipAll
 
       - name: Prepare artifact
