@@ -55,7 +55,7 @@ public class UpdateUtil {
                 if (!response.isSuccessful()) return;
                 var body = response.body();
                 if (body == null) return;
-                String api = ConfigManager.isBinderAlive() ? ConfigManager.getApi() : "riru";
+                String api = ConfigManager.getApi();
                 try {
                     var info = JsonParser.parseReader(body.charStream()).getAsJsonObject();
                     var notes = info.get("body").getAsString();
