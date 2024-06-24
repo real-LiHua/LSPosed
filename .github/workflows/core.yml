@@ -86,6 +86,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
+          yes | sdkmanager --licenses
           ./gradlew zipAll
 
       - name: Prepare artifact
