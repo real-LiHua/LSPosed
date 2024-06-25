@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.8...3.28)
+cmake_minimum_required(VERSION 3.13.4...3.28)
 project(daemon)
 
 add_subdirectory(${EXTERNAL_ROOT} external)
 
 set(SOURCES
-        dex2oat.cpp
+       dex2oat.cpp
         logcat.cpp
         obfuscation.cpp
         )
