@@ -3,7 +3,7 @@
 	url = https://github.com/real-LiHua/LSPlant.git
 [submodule "external/dobby"]
 	path = external/dobby
-	url = https://github.com/LSPosed/Dobby.git
+	url = https://github.com/jmpews/Dobby
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
