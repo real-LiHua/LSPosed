@@ -3,5 +3,5 @@ name=LSPosed
 version=${versionName} (${versionCode})
 versionCode=${versionCode}
 author=${authorList}
-description=Another enhanced implementation of Xposed Framework. Supports Android 8.1 ~ 14. ${requirement}.
+description=Another enhanced implementation of Xposed Framework. Supports Android 8.1 ~ 14. Requires Magisk 24.0+ and Zygisk enabled.
 updateJson=${updateJson}
