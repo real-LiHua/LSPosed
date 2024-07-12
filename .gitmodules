@@ -10,3 +10,6 @@
 [submodule "external/cxx"]
 	path = external/cxx
 	url = https://github.com/topjohnwu/libcxx.git
+[submodule "services/xposed-service"]
+	path = services/xposed-service
+	url = https://github.com/libxposed/service.git

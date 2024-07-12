@@ -6,10 +6,7 @@ add_subdirectory(${CORE_ROOT} core)
 configure_file(template/loader.cpp src/loader.cpp)
 
 aux_source_directory(src SRC_LIST)
-if (${API} STREQUAL "zygisk")
-    set(SRC_LIST ${SRC_LIST} api/zygisk_main.cpp)
-endif()
-
+set(SRC_LIST ${SRC_LIST} api/main.cpp)
 add_library(${PROJECT_NAME} SHARED ${SRC_LIST} ${CMAKE_CURRENT_BINARY_DIR}/src/loader.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
