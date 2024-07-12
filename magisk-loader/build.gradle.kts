@@ -117,7 +117,6 @@ fun afterEval() = android.applicationVariants.forEach { variant ->
     val variantLowered = variant.name.lowercase()
     val buildTypeCapped = variant.buildType.name.replaceFirstChar { it.uppercase() }
     val buildTypeLowered = variant.buildType.name.lowercase()
-    val flavorCapped = variant.flavorName!!.replaceFirstChar { it.uppercase() }
     val flavorLowered = variant.flavorName!!.lowercase()
 
     val magiskDir = layout.buildDirectory.dir("magisk/$variantLowered")
@@ -146,11 +145,6 @@ fun afterEval() = android.applicationVariants.forEach { variant ->
                 "versionCode" to verCode,
                 "authorList" to authors,
                 "updateJson" to "https://lsposed.github.io/LSPosed/release/${flavorLowered}.json",
-                "requirement" to when (flavorCapped) {
-                    "zygisk" -> "Requires Magisk 24.0+ and Zygisk enabled"
-                    else -> "No further requirements"
-                },
-                "api" to flavorCapped,
             )
             filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
         }
