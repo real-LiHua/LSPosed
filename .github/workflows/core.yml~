@@ -59,9 +59,9 @@ jobs:
           path: external/lsplant
       - run: |
           cd external/lsplant
-          git submodule deinit -f external/lsparself
-          git submodule deinit -f external/lsprism
-          git submodule update --remote external/dex_builder
+          git submodule deinit -f test/src/main/jni/external/lsparself
+          git submodule deinit -f test/src/main/jni/external/lsprism
+          git submodule update --remote dex_builder
           git submodule update --remote docs/doxygen-awesome-css
           cd ../..
 
