@@ -40,20 +40,9 @@ jobs:
             echo ${{ secrets.KEY_STORE }} | base64 --decode > key.jks
           fi
 
-      - name: Checkout libxposed/api
-        uses: actions/checkout@v3
-        with:
-          repository: libxposed/api
-          path: libxposed/api
-
-      - name: Checkout libxposed/service
-        uses: actions/checkout@v3
-        with:
-          repository: libxposed/service
-          path: libxposed/service
-      
       - name: Checkout external/lsplant
         run: |
+          git submodule add https://github.com/LSPosed/LSPlant.git external/lsplant
           cd external/lsplant
           git submodule update --remote lsplant/src/main/jni/external/dex_builder
           cd ../..
