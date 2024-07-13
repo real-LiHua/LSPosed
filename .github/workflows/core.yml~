@@ -51,6 +51,22 @@ jobs:
         with:
           repository: libxposed/service
           path: libxposed/service
+      
+      - name: Checkout LSPosed/LSPlant
+        uses: actions/checkout@v3
+        with:
+          repository: LSPosed/LSPlant
+          path: external/lsplant
+      - run: |
+          cd external/lsplant
+          git rm --cached test/src/main/jni/external/lsparself
+          git rm --cached test/src/main/jni/external/lsprism
+          rm -rvf test/src/main/jni/external/lsparself
+          rm -rvf test/src/main/jni/external/lsprism
+          head -n -6 .gitmodules > .gitmodules
+          git submodule update --remote lsplant/src/main/jni/external/dex_builder
+          git submodule update --remote  docs/doxygen-awesome-css
+          cd ../..
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -59,7 +75,7 @@ jobs:
           java-version: "21"
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
           gradle-home-cache-cleanup: true
 
