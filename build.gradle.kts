@@ -103,6 +103,7 @@ subprojects {
             lint {
                 abortOnError = true
                 checkReleaseBuilds = false
+                showAll = true
             }
 
             compileOptions {
