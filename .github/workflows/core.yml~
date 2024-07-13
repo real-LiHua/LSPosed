@@ -61,8 +61,8 @@ jobs:
           cd external/lsplant
           git submodule deinit -f test/src/main/jni/external/lsparself
           git submodule deinit -f test/src/main/jni/external/lsprism
-          git submodule update --remote lsplant/src/main/jni/external/dex_builder
-          git submodule update --remote  docs/doxygen-awesome-css
+          git submodule update --remote external/dex_builder
+          git submodule update --remote docs/doxygen-awesome-css
           cd ../..
 
       - name: Setup Java
