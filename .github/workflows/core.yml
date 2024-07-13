@@ -44,7 +44,7 @@ jobs:
         run: |
           git submodule add https://github.com/LSPosed/LSPlant.git external/lsplant
           cd external/lsplant
-          git submodule update --init --remote lsplant/src/main/jni/external/dex_builder
+          git submodule update --init --recursive --remote lsplant/src/main/jni/external/dex_builder
           cd ../..
 
       - name: Setup Java
