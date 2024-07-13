@@ -52,18 +52,15 @@ jobs:
           repository: libxposed/service
           path: libxposed/service
       
-      - name: Checkout LSPosed/LSPlant
+      - name: Checkout external/lsplant
         uses: actions/checkout@v3
         with:
           repository: LSPosed/LSPlant
           path: external/lsplant
       - run: |
           cd external/lsplant
-          git rm --cached test/src/main/jni/external/lsparself
-          git rm --cached test/src/main/jni/external/lsprism
-          rm -rvf test/src/main/jni/external/lsparself
-          rm -rvf test/src/main/jni/external/lsprism
-          head -n -6 .gitmodules > .gitmodules
+          git submodule deinit -f test/src/main/jni/external/lsparself
+          git submodule deinit -f test/src/main/jni/external/lsprism
           git submodule update --remote lsplant/src/main/jni/external/dex_builder
           git submodule update --remote  docs/doxygen-awesome-css
           cd ../..
