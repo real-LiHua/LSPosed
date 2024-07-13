@@ -42,6 +42,7 @@ jobs:
 
       - name: Checkout external/lsplant
         run: |
+          git submodule add https://github.com/LSPosed/LSPlant.git external/lsplant
           cd external/lsplant
           git submodule update --remote lsplant/src/main/jni/external/dex_builder
           cd ../..
