@@ -53,11 +53,7 @@ jobs:
           path: libxposed/service
       
       - name: Checkout external/lsplant
-        uses: actions/checkout@v3
-        with:
-          repository: LSPosed/LSPlant
-          path: external/lsplant
-      - run: |
+        run: |
           cd external/lsplant
           git submodule update --remote dex_builder
           cd ../..
