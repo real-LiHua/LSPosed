@@ -87,9 +87,29 @@ import java.util.stream.Collectors;
 
 import rikka.core.util.ResourceUtils;
 import rikka.material.app.LocaleDelegate;
-// FIXME
 import rikka.widget.mainswitchbar.MainSwitchBar;
 import rikka.widget.mainswitchbar.OnMainSwitchChangeListener;
+
+public class mainSwitchBar extends MainSwitchBar {
+    @Override
+    public void toggle() {
+        if (!super.isChecked()) {
+            enabled = super.isChecked();
+            if (!moduleUtil.setModuleEnabled(module.packageName, isChecked)) {
+                super.toggle()
+                enabled = !isChecked;
+            }
+            var tmpChkList = new HashSet<>(checkedList);
+            if (isChecked && !tmpChkList.isEmpty() && !ConfigManager.setModuleScope(module.packageName, module.legacy, tmpChkList)) {
+                super.setChecked(false);
+                enabled = false;
+            }
+            fragment.runOnUiThread(ScopeAdapter.this::notifyDataSetChanged);
+            
+        }
+    }
+}
+
 
 public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<ScopeAdapter.ViewHolder> implements Filterable {
 
@@ -119,29 +139,11 @@ public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<Scope
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             var mainSwitchBar = (MainSwitchBar) holder.itemView;
             mainSwitchBar.setChecked(enabled);
-            mainSwitchBar.addOnSwitchChangeListener(switchBarOnCheckedChangeListener);
         }
 
         @Override
         public int getItemCount() {
             return 1;
-        }
-    };
-
-    private final OnMainSwitchChangeListener switchBarOnCheckedChangeListener = new OnMainSwitchChangeListener() {
-        @Override
-        public void onSwitchChanged(Switch view, boolean isChecked) {
-            enabled = isChecked;
-            if (!moduleUtil.setModuleEnabled(module.packageName, isChecked)) {
-                view.setChecked(!isChecked);
-                enabled = !isChecked;
-            }
-            var tmpChkList = new HashSet<>(checkedList);
-            if (isChecked && !tmpChkList.isEmpty() && !ConfigManager.setModuleScope(module.packageName, module.legacy, tmpChkList)) {
-                view.setChecked(false);
-                enabled = false;
-            }
-            fragment.runOnUiThread(ScopeAdapter.this::notifyDataSetChanged);
         }
     };
 
