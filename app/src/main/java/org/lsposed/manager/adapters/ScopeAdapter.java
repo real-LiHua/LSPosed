@@ -90,27 +90,6 @@ import rikka.material.app.LocaleDelegate;
 import rikka.widget.mainswitchbar.MainSwitchBar;
 import rikka.widget.mainswitchbar.OnMainSwitchChangeListener;
 
-public class mainSwitchBar extends MainSwitchBar {
-    @Override
-    public void toggle() {
-        if (!super.isChecked()) {
-            enabled = super.isChecked();
-            if (!moduleUtil.setModuleEnabled(module.packageName, isChecked)) {
-                super.toggle()
-                enabled = !isChecked;
-            }
-            var tmpChkList = new HashSet<>(checkedList);
-            if (isChecked && !tmpChkList.isEmpty() && !ConfigManager.setModuleScope(module.packageName, module.legacy, tmpChkList)) {
-                super.setChecked(false);
-                enabled = false;
-            }
-            fragment.runOnUiThread(ScopeAdapter.this::notifyDataSetChanged);
-            
-        }
-    }
-}
-
-
 public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<ScopeAdapter.ViewHolder> implements Filterable {
 
     private final Activity activity;
@@ -139,11 +118,29 @@ public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<Scope
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             var mainSwitchBar = (MainSwitchBar) holder.itemView;
             mainSwitchBar.setChecked(enabled);
+            mainSwitchBar.addOnSwitchChangeListener(switchBarOnCheckedChangeListener);
         }
 
         @Override
         public int getItemCount() {
             return 1;
+        }
+    };
+
+    private final OnMainSwitchChangeListener switchBarOnCheckedChangeListener = new OnMainSwitchChangeListener() {
+        @Override
+        public void onSwitchChanged(Switch view, boolean isChecked) {
+            enabled = isChecked;
+            if (!moduleUtil.setModuleEnabled(module.packageName, isChecked)) {
+                view.setChecked(!isChecked);
+                enabled = !isChecked;
+            }
+            var tmpChkList = new HashSet<>(checkedList);
+            if (isChecked && !tmpChkList.isEmpty() && !ConfigManager.setModuleScope(module.packageName, module.legacy, tmpChkList)) {
+                view.setChecked(false);
+                enabled = false;
+            }
+            fragment.runOnUiThread(ScopeAdapter.this::notifyDataSetChanged);
         }
     };
 
@@ -295,6 +292,27 @@ public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<Scope
                 fragment.showHint(R.string.enable_documentui, true);
                 return false;
             }
+        } else if (itemId == R.id.select_all) {
+            var tmpChkList = new HashSet<ApplicationWithEquals>(ConfigManager.getModuleScope(module.packageName));
+            for (AppInfo info : searchList) {
+                if (info.packageName.equals("android")) {
+                    fragment.showHint(R.string.reboot_required, true, R.string.reboot, v -> ConfigManager.reboot());
+                }
+                tmpChkList.add(info.application);
+            }
+            ConfigManager.setModuleScope(module.packageName, module.legacy, tmpChkList);
+        } else if (itemId == R.id.select_none) {
+            var tmpChkList = new HashSet<ApplicationWithEquals>(ConfigManager.getModuleScope(module.packageName));
+
+            for (AppInfo info : searchList) {
+                if (tmpChkList.remove(info.application) && info.packageName.equals("android")) {
+                    fragment.showHint(R.string.reboot_required, true, R.string.reboot, v -> ConfigManager.reboot());
+                }
+            }
+            ConfigManager.setModuleScope(module.packageName, module.legacy, tmpChkList);
+        } else if (itemId == R.id.automatic_add) {
+            item.setChecked(!item.isChecked());
+            ConfigManager.setAutomaticAdd(module.packageName, item.isChecked());
         } else if (!AppHelper.onOptionsItemSelected(item, preferences)) {
             return false;
         }
@@ -374,6 +392,7 @@ public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<Scope
             }
             case 0 -> menu.findItem(R.id.item_sort_by_name).setChecked(true);
         }
+        menu.findItem(R.id.automatic_add).setChecked(ConfigManager.getAutomaticAdd(module.packageName));
     }
 
     @Override
