@@ -99,7 +99,7 @@ target_compile_options(cxx PRIVATE ${LIBCXX_FLAGS} ${LIBCXXABI_FLAGS} -ffunction
 target_include_directories(cxx PUBLIC ${LIBCXX_EXPORT_INCLUDES})
 target_include_directories(cxx PRIVATE ${LIBCXX_INCLUDES} ${LIBCXXABI_INCLUDES})
 
-find_package(cxx REQUIRED CONFIG)
+#find_package(cxx REQUIRED CONFIG)
 link_libraries(cxx::cxx)
 
 OPTION(LSPLANT_BUILD_SHARED OFF)

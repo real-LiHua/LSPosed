@@ -24,8 +24,10 @@
 #include <unistd.h>
 #include <cassert>
 #include <sys/stat.h>
-#include "logging.h"
+#include "logging.hpp"
 #include "elf_util.h"
+#include <vector>
+#include "lsplt.hpp"
 
 using namespace SandHook;
 
@@ -35,25 +37,17 @@ inline constexpr auto offsetOf(ElfW(Ehdr) *head, ElfW(Off) off) {
             reinterpret_cast<uintptr_t>(head) + off);
 }
 
-ElfImg::ElfImg(std::string_view base_name) : elf(base_name) {
-    if (!findModuleBase()) {
-        base = nullptr;
-        return;
-    }
-
-    //load elf
+ElfImg::ElfImg(std::string_view base_name, void *base, off_t file_offset, size_t size) : elf(
+        base_name), base(base), size(size) {
+    // load elf
     int fd = open(elf.data(), O_RDONLY);
     if (fd < 0) {
-        LOGE("failed to open {}", elf);
+        LOGE("failed to open %s", elf.data());
         return;
     }
 
-    size = lseek(fd, 0, SEEK_END);
-    if (size <= 0) {
-        LOGE("lseek() failed for {}", elf);
-    }
-
-    header = reinterpret_cast<decltype(header)>(mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0));
+    header = reinterpret_cast<decltype(header)>(mmap(nullptr, size, PROT_READ, MAP_SHARED, fd,
+                                                     file_offset));
 
     close(fd);
 
@@ -72,6 +66,8 @@ ElfImg::ElfImg(std::string_view base_name) : elf(base_name) {
                     dynsym = section_h;
                     dynsym_offset = section_h->sh_offset;
                     dynsym_start = offsetOf<decltype(dynsym_start)>(header, dynsym_offset);
+                    dynsym_size = section_h->sh_size;
+                    dynsym_count = dynsym_size / entsize;
                 }
                 break;
             }
@@ -93,6 +89,8 @@ ElfImg::ElfImg(std::string_view base_name) : elf(base_name) {
                 }
                 if (strcmp(sname, ".strtab") == 0) {
                     symstr_offset_for_symtab = section_h->sh_offset;
+                } else if (strcmp(sname, ".dynstr") == 0) {
+                    symstr_offset_for_dynsym = section_h->sh_offset;
                 }
                 break;
             }
@@ -127,7 +125,7 @@ ElfImg::ElfImg(std::string_view base_name) : elf(base_name) {
     }
 }
 
-ElfW(Addr) ElfImg::ElfLookup(std::string_view name, uint32_t hash) const {
+ElfW(Sym) *ElfImg::ElfLookup(std::string_view name, uint32_t hash) const {
     if (nbucket_ == 0) return 0;
 
     char *strings = (char *) strtab_start;
@@ -135,13 +133,13 @@ ElfW(Addr) ElfImg::ElfLookup(std::string_view name, uint32_t hash) const {
     for (auto n = bucket_[hash % nbucket_]; n != 0; n = chain_[n]) {
         auto *sym = dynsym_start + n;
         if (name == strings + sym->st_name) {
-            return sym->st_value;
+            return sym;
         }
     }
-    return 0;
+    return nullptr;
 }
 
-ElfW(Addr) ElfImg::GnuLookup(std::string_view name, uint32_t hash) const {
+ElfW(Sym) *ElfImg::GnuLookup(std::string_view name, uint32_t hash) const {
     static constexpr auto bloom_mask_bits = sizeof(ElfW(Addr)) * 8;
 
     if (gnu_nbucket_ == 0 || gnu_bloom_size_ == 0) return 0;
@@ -158,12 +156,12 @@ ElfW(Addr) ElfImg::GnuLookup(std::string_view name, uint32_t hash) const {
                 auto *sym = dynsym_start + sym_index;
                 if (((gnu_chain_[sym_index] ^ hash) >> 1) == 0
                     && name == strings + sym->st_name) {
-                    return sym->st_value;
+                    return sym;
                 }
             } while ((gnu_chain_[sym_index++] & 1) == 0);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void ElfImg::MayInitLinearMap() const {
@@ -181,36 +179,71 @@ void ElfImg::MayInitLinearMap() const {
     }
 }
 
-ElfW(Addr) ElfImg::LinearLookup(std::string_view name) const {
+const std::string ElfImg::findSymbolNameForAddr(ElfW(Addr) addr) const {
+    if (symtab_start != nullptr && symstr_offset_for_symtab != 0) {
+        auto addr_off = (ElfW(Addr)) (addr + bias - (uintptr_t) base);
+        for (ElfW(Off) i = 0; i < symtab_count; i++) {
+            unsigned int st_type = ELF_ST_TYPE(symtab_start[i].st_info);
+            const char *st_name = offsetOf<const char *>(header, symstr_offset_for_symtab +
+                                                                 symtab_start[i].st_name);
+            if ((st_type == STT_FUNC || st_type == STT_OBJECT) && symtab_start[i].st_size) {
+                auto off = symtab_start[i].st_value;
+                auto len = symtab_start[i].st_size;
+                if (off <= addr_off && addr_off < off + len) {
+                    LOGD("found in symtab sym %p name %s", off,
+                         st_name);
+                    char buf[1024];
+                    snprintf(buf, sizeof(buf), "%s (0x%lx)+0x%lx/(0x%lx) from symtab %d", st_name,
+                             off, addr_off - off, len, i);
+                    return buf;
+                }
+            }
+        }
+    }
+    if (dynsym_start != nullptr && symstr_offset_for_dynsym != 0) {
+        auto addr_off = (ElfW(Addr)) (addr + bias - (uintptr_t) base);
+        for (ElfW(Off) i = 0; i < dynsym_count; i++) {
+            unsigned int st_type = ELF_ST_TYPE(dynsym_start[i].st_info);
+            const char *st_name = offsetOf<const char *>(header, symstr_offset_for_dynsym +
+                                                                 dynsym_start[i].st_name);
+            if ((st_type == STT_FUNC || st_type == STT_OBJECT) && dynsym_start[i].st_size) {
+                auto off = dynsym_start[i].st_value;
+                auto len = dynsym_start[i].st_size;
+                if (off <= addr_off && addr_off < off + len) {
+                    LOGD("found in dynsym sym %p name %s", off,
+                         st_name);
+                    char buf[1024];
+                    snprintf(buf, sizeof(buf), "%s (0x%lx)+0x%lx/(0x%lx) from dynsym %d", st_name,
+                             off, addr_off - off, len, i);
+                    return buf;
+                }
+            }
+        }
+    }
+    return "(not found)";
+}
+
+
+ElfW(Sym) *ElfImg::LinearLookup(std::string_view name) const {
     MayInitLinearMap();
     if (auto i = symtabs_.find(name); i != symtabs_.end()) {
-        return i->second->st_value;
+        return i->second;
     } else {
         return 0;
     }
 }
 
-std::vector<ElfW(Addr)> ElfImg::LinearRangeLookup(std::string_view name) const {
+ElfW(Sym) *ElfImg::PrefixLookupFirst(std::string_view prefix) const {
     MayInitLinearMap();
-    std::vector<ElfW(Addr)> res;
-    for (auto [i, end] = symtabs_.equal_range(name); i != end; ++i) {
-        auto offset = i->second->st_value;
-        res.emplace_back(offset);
-        LOGD("found {} {:#x} in {} in symtab by linear range lookup", name, offset, elf);
-    }
-    return res;
-}
-
-ElfW(Addr) ElfImg::PrefixLookupFirst(std::string_view prefix) const {
-    MayInitLinearMap();
-    if (auto i = symtabs_.lower_bound(prefix); i != symtabs_.end() && i->first.starts_with(prefix)) {
-        LOGD("found prefix {} of {} {:#x} in {} in symtab by linear lookup", prefix, i->first, i->second->st_value, elf);
-        return i->second->st_value;
+    if (auto i = symtabs_.lower_bound(prefix); i != symtabs_.end() &&
+                                               i->first.starts_with(prefix)) {
+        LOGD("found prefix %s of %s %p in %s in symtab by linear lookup", prefix.data(),
+             i->first.data(), reinterpret_cast<void *>(i->second->st_value), elf.data());
+        return i->second;
     } else {
         return 0;
     }
 }
-
 
 ElfImg::~ElfImg() {
     //open elf file local
@@ -220,23 +253,27 @@ ElfImg::~ElfImg() {
     }
     //use mmap
     if (header) {
-        munmap(header, size);
+        if (munmap(header, size) == -1) PLOGE("munmap");
+        LOGI("unmapped %p %ld", header, size);
     }
 }
 
-ElfW(Addr)
-ElfImg::getSymbOffset(std::string_view name, uint32_t gnu_hash, uint32_t elf_hash) const {
-    if (auto offset = GnuLookup(name, gnu_hash); offset > 0) {
-        LOGD("found {} {:#x} in {} in dynsym by gnuhash", name, offset, elf);
-        return offset;
-    } else if (offset = ElfLookup(name, elf_hash); offset > 0) {
-        LOGD("found {} {:#x} in {} in dynsym by elfhash", name, offset, elf);
-        return offset;
-    } else if (offset = LinearLookup(name); offset > 0) {
-        LOGD("found {} {:#x} in {} in symtab by linear lookup", name, offset, elf);
-        return offset;
+ElfW(Sym) *
+ElfImg::getSym(std::string_view name, uint32_t gnu_hash, uint32_t elf_hash) const {
+    if (auto sym = GnuLookup(name, gnu_hash); sym) {
+        LOGD("found %s %p/%llu in %s in dynsym by gnuhash", name.data(),
+             reinterpret_cast<void *>(sym->st_value), sym->st_size, elf.data());
+        return sym;
+    } else if (sym = ElfLookup(name, elf_hash); sym) {
+        LOGD("found %s %p/%llu in %s in dynsym by elfhash", name.data(),
+             reinterpret_cast<void *>(sym->st_value), sym->st_size, elf.data());
+        return sym;
+    } else if (sym = LinearLookup(name); sym) {
+        LOGD("found %s %p/%llu in %s in symtab by linear lookup", name.data(),
+             reinterpret_cast<void *>(sym->st_value), sym->st_size, elf.data());
+        return sym;
     } else {
-        return 0;
+        return nullptr;
     }
 
 }
@@ -245,47 +282,24 @@ constexpr inline bool contains(std::string_view a, std::string_view b) {
     return a.find(b) != std::string_view::npos;
 }
 
-bool ElfImg::findModuleBase() {
-    off_t load_addr;
-    bool found = false;
-    FILE *maps = fopen("/proc/self/maps", "r");
-
-    char *buff = nullptr;
-    size_t len = 0;
-    ssize_t nread;
-
-    while ((nread = getline(&buff, &len, maps)) != -1) {
-        std::string_view line{buff, static_cast<size_t>(nread)};
-
-        if ((contains(line, "r-xp") || contains(line, "r--p")) && contains(line, elf)) {
-            LOGD("found: {}", line);
-            if (auto begin = line.find_last_of(' '); begin != std::string_view::npos &&
-                                                     line[++begin] == '/') {
-                found = true;
-                elf = line.substr(begin);
-                if (elf.back() == '\n') elf.pop_back();
-                LOGD("update path: {}", elf);
+ElfInfo ElfInfo::getElfInfoForName(const char *name, const char *pid) {
+    auto maps = lsplt::MapInfo::Scan(pid);
+    std::string path;
+    void *base = nullptr;
+    size_t file_size = 0;
+    for (auto &map: maps) {
+        if (map.path.ends_with(name) && map.offset == 0) {
+            struct stat st{};
+            if (stat(map.path.c_str(), &st) == -1) {
+                PLOGE("stat %s", map.path.c_str());
                 break;
             }
+            path = map.path;
+            file_size = st.st_size;
+            base = reinterpret_cast<void *>(map.start);
+            LOGD("found path %s size %zu", path.c_str(), file_size);
+            break;
         }
     }
-    if (!found) {
-        if (buff) free(buff);
-        LOGE("failed to read load address for {}", elf);
-        fclose(maps);
-        return false;
-    }
-
-    if (char *next = buff; load_addr = strtoul(buff, &next, 16), next == buff) {
-        LOGE("failed to read load address for {}", elf);
-    }
-
-    if (buff) free(buff);
-
-    fclose(maps);
-
-    LOGD("get module base {}: {:#x}", elf, load_addr);
-
-    base = reinterpret_cast<void *>(load_addr);
-    return true;
+    return {path, base, 0, file_size};
 }
