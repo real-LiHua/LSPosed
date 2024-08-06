@@ -39,12 +39,10 @@ public class LinkTransformationMethod implements TransformationMethod {
 
     @Override
     public CharSequence getTransformation(CharSequence source, View view) {
-        if (view instanceof TextView) {
-            TextView textView = (TextView) view;
-            if (textView.getText() == null || !(textView.getText() instanceof Spannable)) {
+        if (view instanceof TextView textView) {
+            if (textView.getText() == null || !(textView.getText() instanceof Spannable text)) {
                 return source;
             }
-            Spannable text = (Spannable) textView.getText();
             URLSpan[] spans = text.getSpans(0, textView.length(), URLSpan.class);
             for (int i = spans.length - 1; i >= 0; i--) {
                 URLSpan oldSpan = spans[i];

@@ -136,8 +136,7 @@ public class ExpandableTextView extends MaterialTextView {
             int line = layout.getLineForVertical((int) event.getY());
             int offset = layout.getOffsetForHorizontal(line, event.getX());
 
-            if (getText() instanceof Spanned) {
-                Spanned spanned = (Spanned) getText();
+            if (getText() instanceof Spanned spanned) {
 
                 ClickableSpan[] links = spanned.getSpans(offset, offset, ClickableSpan.class);
 
@@ -162,8 +161,7 @@ public class ExpandableTextView extends MaterialTextView {
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof Bundle) {
-            Bundle bundle = (Bundle) state;
+        if (state instanceof Bundle bundle) {
             setMaxLines(bundle.getInt("maxLines"));
             state = bundle.getParcelable("superState");
         }

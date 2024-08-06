@@ -120,7 +120,7 @@ public class FlashDialogBuilder extends BlurBehindDialogBuilder {
             var reader = new BufferedReader(new InputStreamReader(inputStream));
 
             for (var line = ""; line != null; line = reader.readLine()) {
-                if (line.length() > 0) {
+                if (!line.isEmpty()) {
                     var showLine = line + "\n";
                     view.post(() -> {
                         textView.append(showLine);

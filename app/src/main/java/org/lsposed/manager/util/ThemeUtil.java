@@ -32,6 +32,7 @@ import org.lsposed.manager.R;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import rikka.core.util.ResourceUtils;
 
@@ -87,12 +88,10 @@ public class ThemeUtil {
 
     @StyleRes
     public static int getNightThemeStyleRes(Context context) {
-        switch (getNightTheme(context)) {
-            case THEME_BLACK:
-                return R.style.ThemeOverlay_Black;
-            case THEME_DEFAULT:
-            default:
-                return R.style.ThemeOverlay;
+        if (Objects.equals(getNightTheme(context), THEME_BLACK)) {
+            return R.style.ThemeOverlay_Black;
+            } else {
+            return R.style.ThemeOverlay;
         }
     }
 
@@ -113,15 +112,11 @@ public class ThemeUtil {
     }
 
     public static int getDarkTheme(String mode) {
-        switch (mode) {
-            case MODE_NIGHT_FOLLOW_SYSTEM:
-            default:
-                return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-            case MODE_NIGHT_YES:
-                return AppCompatDelegate.MODE_NIGHT_YES;
-            case MODE_NIGHT_NO:
-                return AppCompatDelegate.MODE_NIGHT_NO;
-        }
+        return switch (mode) {
+            default -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+            case MODE_NIGHT_YES -> AppCompatDelegate.MODE_NIGHT_YES;
+            case MODE_NIGHT_NO -> AppCompatDelegate.MODE_NIGHT_NO;
+        };
     }
 
     public static int getDarkTheme() {

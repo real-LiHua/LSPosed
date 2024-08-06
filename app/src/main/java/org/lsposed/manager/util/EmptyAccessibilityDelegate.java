@@ -26,55 +26,57 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
+import androidx.annotation.NonNull;
+
 public class EmptyAccessibilityDelegate extends View.AccessibilityDelegate {
 
     @Override
-    public void sendAccessibilityEvent(View host, int eventType) {
+    public void sendAccessibilityEvent(@NonNull View host, int eventType) {
 
     }
 
     @Override
-    public boolean performAccessibilityAction(View host, int action, Bundle args) {
+    public boolean performAccessibilityAction(@NonNull View host, int action, Bundle args) {
         return true;
     }
 
     @Override
-    public void sendAccessibilityEventUnchecked(View host, AccessibilityEvent event) {
+    public void sendAccessibilityEventUnchecked(@NonNull View host, @NonNull AccessibilityEvent event) {
 
     }
 
     @Override
-    public boolean dispatchPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+    public boolean dispatchPopulateAccessibilityEvent(@NonNull View host, @NonNull AccessibilityEvent event) {
         return true;
     }
 
     @Override
-    public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+    public void onPopulateAccessibilityEvent(@NonNull View host, @NonNull AccessibilityEvent event) {
 
     }
 
     @Override
-    public void onInitializeAccessibilityEvent(View host, AccessibilityEvent event) {
+    public void onInitializeAccessibilityEvent(@NonNull View host, @NonNull AccessibilityEvent event) {
 
     }
 
     @Override
-    public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+    public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfo info) {
 
     }
 
     @Override
-    public void addExtraDataToAccessibilityNodeInfo(View host, AccessibilityNodeInfo info, String extraDataKey, Bundle arguments) {
+    public void addExtraDataToAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey, Bundle arguments) {
 
     }
 
     @Override
-    public boolean onRequestSendAccessibilityEvent(ViewGroup host, View child, AccessibilityEvent event) {
+    public boolean onRequestSendAccessibilityEvent(@NonNull ViewGroup host, @NonNull View child, @NonNull AccessibilityEvent event) {
         return true;
     }
 
     @Override
-    public AccessibilityNodeProvider getAccessibilityNodeProvider(View host) {
+    public AccessibilityNodeProvider getAccessibilityNodeProvider(@NonNull View host) {
         return null;
     }
 }

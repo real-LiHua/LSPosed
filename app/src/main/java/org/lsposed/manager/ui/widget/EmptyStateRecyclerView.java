@@ -28,6 +28,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ConcatAdapter;
 
@@ -59,7 +60,7 @@ public class EmptyStateRecyclerView extends StatefulRecyclerView {
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
+    protected void dispatchDraw(@NonNull Canvas canvas) {
         super.dispatchDraw(canvas);
         var adapter = getAdapter();
         if (adapter instanceof ConcatAdapter) {

@@ -371,7 +371,6 @@ public class ScopeAdapter extends EmptyStateRecyclerView.EmptyStateAdapter<Scope
             }
             case 0 -> menu.findItem(R.id.item_sort_by_name).setChecked(true);
         }
-        menu.findItem(R.id.automatic_add).setChecked(ConfigManager.getAutomaticAdd(module.packageName));
     }
 
     @Override

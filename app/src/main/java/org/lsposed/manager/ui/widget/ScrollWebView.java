@@ -71,13 +71,10 @@ public class ScrollWebView extends WebView {
 
     private static ViewParent findViewParentIfNeeds(View v) {
         var parent = v.getParent();
-        if (parent == null) return null;
-        if (parent instanceof RecyclerView && !(parent instanceof BorderRecyclerView)) {
-            return parent;
-        } else if (parent instanceof View) {
-            return findViewParentIfNeeds((View) parent);
-        } else {
-            return parent;
-        }
+        return switch (parent) {
+            case null -> null;
+            case View view -> findViewParentIfNeeds(view);
+            default -> parent;
+        };
     }
 }

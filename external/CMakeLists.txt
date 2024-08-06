@@ -6,50 +6,6 @@ add_library(lsplt STATIC ${SOURCES})
 target_include_directories(lsplt PUBLIC lsplt/lsplt/src/main/jni/include)
 target_include_directories(lsplt PRIVATE lsplt/lsplt/src/main/jni)
 
-set(LIBCXX_SOURCES
-        algorithm.cpp
-#        any.cpp
-        atomic.cpp
-        barrier.cpp
-#        bind.cpp
-        charconv.cpp
-        chrono.cpp
-        condition_variable.cpp
-        condition_variable_destructor.cpp
-#        debug.cpp
-        exception.cpp
-#        filesystem/directory_iterator.cpp
-#        filesystem/int128_builtins.cpp
-#        filesystem/operations.cpp
-        functional.cpp
-        future.cpp
-        hash.cpp
-#        ios.cpp
-#        ios.instantiations.cpp
-#        iostream.cpp
-#        locale.cpp
-        memory.cpp
-        mutex.cpp
-        mutex_destructor.cpp
-        new.cpp
-        optional.cpp
-        random.cpp
-#        regex.cpp
-#        ryu/d2fixed.cpp
-#        ryu/d2s.cpp
-#        ryu/f2s.cpp
-        shared_mutex.cpp
-        stdexcept.cpp
-        string.cpp
-#        strstream.cpp
-        system_error.cpp
-        thread.cpp
-#        typeinfo.cpp
-        utility.cpp
-        valarray.cpp
-        variant.cpp
-        vector.cpp
-        )
 
 list(TRANSFORM LIBCXX_SOURCES PREPEND cxx/src/)
 

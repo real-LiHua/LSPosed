@@ -48,6 +48,8 @@ import org.lsposed.manager.databinding.FragmentAppListBinding;
 import org.lsposed.manager.util.BackupUtils;
 import org.lsposed.manager.util.ModuleUtil;
 
+import java.util.Objects;
+
 import rikka.material.app.LocaleDelegate;
 import rikka.recyclerview.RecyclerViewKt;
 
@@ -200,16 +202,16 @@ public class AppListFragment extends BaseFragment implements MenuProvider {
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
-        searchView.setOnQueryTextListener(searchListener);
+        Objects.requireNonNull(searchView).setOnQueryTextListener(searchListener);
         searchView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
-            public void onViewAttachedToWindow(View arg0) {
+            public void onViewAttachedToWindow(@NonNull View arg0) {
                 binding.appBar.setExpanded(false, true);
                 binding.recyclerView.setNestedScrollingEnabled(false);
             }
 
             @Override
-            public void onViewDetachedFromWindow(View v) {
+            public void onViewDetachedFromWindow(@NonNull View v) {
                 binding.recyclerView.setNestedScrollingEnabled(true);
             }
         });

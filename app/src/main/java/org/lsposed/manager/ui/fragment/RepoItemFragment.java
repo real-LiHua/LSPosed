@@ -547,10 +547,6 @@ public class RepoItemFragment extends BaseFragment implements RepoLoader.RepoLis
             return position == 0 ? 0 : 1;
         }
 
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
     }
 
     public static abstract class BorderFragment extends BaseFragment {
@@ -558,8 +554,7 @@ public class RepoItemFragment extends BaseFragment implements RepoLoader.RepoLis
 
         void attachListeners() {
             var parent = getParentFragment();
-            if (parent instanceof RepoItemFragment) {
-                var repoItemFragment = (RepoItemFragment) parent;
+            if (parent instanceof RepoItemFragment repoItemFragment) {
                 borderView.getBorderViewDelegate().setBorderVisibilityChangedListener((top, oldTop, bottom, oldBottom) -> repoItemFragment.binding.appBar.setLifted(!top));
                 repoItemFragment.binding.appBar.setLifted(!borderView.getBorderViewDelegate().isShowingTopBorder());
                 repoItemFragment.binding.toolbar.setOnClickListener(v -> {
@@ -607,13 +602,12 @@ public class RepoItemFragment extends BaseFragment implements RepoLoader.RepoLis
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             var parent = getParentFragment();
-            if (!(parent instanceof RepoItemFragment)) {
+            if (!(parent instanceof RepoItemFragment repoItemFragment)) {
                 if (!safeNavigate(R.id.action_repo_item_fragment_to_repo_fragment)) {
                     safeNavigate(R.id.repo_nav);
                 }
                 return null;
             }
-            var repoItemFragment = (RepoItemFragment) parent;
             binding = ItemRepoReadmeBinding.inflate(getLayoutInflater(), container, false);
             repoItemFragment.renderGithubMarkdown(binding.readme, repoItemFragment.module.getReadmeHTML());
             borderView = binding.scrollView;
@@ -638,13 +632,12 @@ public class RepoItemFragment extends BaseFragment implements RepoLoader.RepoLis
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             var arguments = getArguments();
             var parent = getParentFragment();
-            if (arguments == null || !(parent instanceof RepoItemFragment)) {
+            if (arguments == null || !(parent instanceof RepoItemFragment repoItemFragment)) {
                 if (!safeNavigate(R.id.action_repo_item_fragment_to_repo_fragment)) {
                     safeNavigate(R.id.repo_nav);
                 }
                 return null;
             }
-            var repoItemFragment = (RepoItemFragment) parent;
             var position = arguments.getInt("position", 0);
             if (position == 1)
                 adapter = repoItemFragment.releaseAdapter;
